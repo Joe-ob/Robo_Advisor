@@ -26,10 +26,17 @@ Last_refreshed=parsed_response["Meta Data"]["3. Last Refreshed"]
 latest_close=tsd[latest_day]["4. close"]
 
 high_prices=[]
+low_prices=[]
 for day in dates:
     daily_high=float(tsd[day]["2. high"])
     high_prices.append(daily_high)
+
+    daily_low=float(tsd[day]["3. low"])
+    low_prices.append(daily_low)
 recent_high=max(high_prices)
+recent_low=min(low_prices)
+
+
 
 
 
@@ -42,7 +49,7 @@ print("-------------------------")
 print(f"LATEST DAY: {Last_refreshed}")
 print(f"LATEST CLOSE: {to_usd(float(latest_close))}")
 print(f"RECENT HIGH: {to_usd(float(recent_high))}")
-print("RECENT LOW: $99,000.00")
+print(f"RECENT LOW: {to_usd(float(recent_low))}")
 print("-------------------------")
 print("RECOMMENDATION: BUY!")
 print("RECOMMENDATION REASON: TODO")
