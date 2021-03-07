@@ -1,18 +1,22 @@
 # this is the "app/robo_advisor.py" file
 
-import requests
+import csv
+import datetime
 import json
 import os
-import datetime
-import csv
+from dotenv import load_dotenv
 
+import requests
 
 def to_usd(my_price):
     return "${0:,.2f}".format(my_price)
 
+load_dotenv()
 
+api_key=os.environ.get("ALPHAVANTAGE_API_KEY")
 
-request_url = ("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&apikey=demo")
+ticker=input("Please enter the ticker of the stock or cryptocurrency you wish to analyze: ")
+request_url = (f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&apikey={api_key}")
 response=requests.get(request_url)
 
 parsed_response=json.loads(response.text)
@@ -56,7 +60,7 @@ with open(csv_file_path, "w") as csv_file:
         })
 
 print("-------------------------")
-print("SELECTED SYMBOL: XYZ")
+print("SELECTED SYMBOL: IBM")
 print("-------------------------")
 print("REQUESTING STOCK MARKET DATA...")
 print("REQUEST AT: 2018-02-20 02:00pm")
