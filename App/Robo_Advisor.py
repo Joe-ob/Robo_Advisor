@@ -6,7 +6,9 @@ import json
 import os
 from dotenv import load_dotenv
 import requests
-from pandas import DataFrame
+import plotly
+import plotly.graph_objs as go
+
 
 #This is used later to print current Date/Time
 now=datetime.datetime.now()
@@ -20,6 +22,8 @@ def to_usd(my_price):
 load_dotenv()
 api_key=os.environ.get("ALPHAVANTAGE_API_KEY")
 
+#Boolean value in a while loop for data validation
+#Collaborated with John Sansbury for this part
 is_ticker_valid=False
 
 while is_ticker_valid==False:
@@ -64,7 +68,7 @@ close_prices=[]
 
 
 for day in dates:
-    
+
     daily_high=float(tsd[day]["2. high"])
     high_prices.append(daily_high)
 
@@ -74,6 +78,7 @@ for day in dates:
     daily_close=float(tsd[day]["4. close"])
     close_prices.append(daily_close)
 
+ 
 #find 52 week high low and average
 recent_high=max(high_prices)
 recent_low=min(low_prices)
@@ -83,10 +88,10 @@ ave_close=sum(close_prices)/len(close_prices)
 #uses current and ave price to make recomendation
 if latest_close>ave_close:
     rec="Buy"
-    rec_reason="This stock is trading above its annual average. You might want to ride the momentum"
+    rec_reason="This stock is trading above its 6-month average. You might want to ride the momentum"
 else:
         rec="Sell"
-        rec_reason="Be careful, This stock is trading below its annual average"
+        rec_reason="Be careful, This stock is trading below its 6-month average. It's value may be dropping"
 
 #posts data in  csv file
 csv_file_path=os.path.join(os.path.dirname(__file__), "..", "data", "prices.csv")
@@ -128,4 +133,9 @@ print("-------------------------")
 
 
 
+#Plots daily closing price against time
+plotly.offline.plot({
+    "data": [go.Scatter(x=dates, y=close_prices)],
+    "layout": go.Layout(title=f"{ticker} close prices")
+}, auto_open=True)
 

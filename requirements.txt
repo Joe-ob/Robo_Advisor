@@ -3,5 +3,4 @@
 pip
 requests
 python-dotenv
-pandas 
-seaborn
+plotly
