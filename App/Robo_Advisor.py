@@ -27,8 +27,10 @@ api_key=os.environ.get("ALPHAVANTAGE_API_KEY")
 is_ticker_valid=False
 
 while is_ticker_valid==False:
-    ticker=input("Please enter a valid ticker for the stock you wish to analyze: ")
-    if len(ticker) >= 1 and len(ticker) <= 5 and ticker.isalpha() == True:
+    ticker=input("Please enter a valid ticker for the stock you wish to analyze or enter 'quit' to end the program: ")
+    if ticker=="quit":
+        quit()
+    if len(ticker) >= 1 and len(ticker) <= 7 and ticker.isalpha() == True:
         ticker=ticker.upper()
 
         request_url = (f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&apikey={api_key}")
@@ -38,7 +40,7 @@ while is_ticker_valid==False:
         parsed_response=json.loads(response.text)
         
         if parsed_response=={'Error Message': 'Invalid API call. Please retry or visit the documentation (https://www.alphavantage.co/documentation/) for TIME_SERIES_DAILY.'}:
-            print("You have entered an invalid stock ticker that is either invalid or not tracked by the API. Please try again")
+            print("You have entered a stock ticker that is either invalid or not tracked by the API. Please try again")
 
             is_ticker_valid=False
         
@@ -48,6 +50,7 @@ while is_ticker_valid==False:
     else:
         print("The ticker you entered is invalid, please try again.")
         is_ticker_valid=False
+        
 
 
 
@@ -65,6 +68,7 @@ latest_close=float(tsd[latest_day]["4. close"])
 high_prices=[]
 low_prices=[]
 close_prices=[]
+usd_close_prices=[]
 
 
 for day in dates:
@@ -78,23 +82,34 @@ for day in dates:
     daily_close=float(tsd[day]["4. close"])
     close_prices.append(daily_close)
 
+
  
 #find 52 week high low and average
 recent_high=max(high_prices)
 recent_low=min(low_prices)
 ave_close=sum(close_prices)/len(close_prices)
+ran=recent_high-recent_low
+dev=latest_close-recent_low
+percent=(ran-dev)/ran
+
 
 
 #uses current and ave price to make recomendation
-if latest_close>ave_close:
+if percent<=.25:
+    rec="Sell"
+    rec_reason="This stock is trading close to its 6-month high. It may potentially drop back down"
+elif .25<=percent<=.5:
     rec="Buy"
-    rec_reason="This stock is trading above its 6-month average. You might want to ride the momentum"
+    rec_reason="This stock is trading within 25 percent above its 6-month average. It may be a safe long term investment"
+elif .5<=percent<=.75:
+    rec="Sell"
+    rec_reason="This stock is trading within 25 percent below its 6-month average. It may be on a slow decline"
 else:
-        rec="Sell"
-        rec_reason="Be careful, This stock is trading below its 6-month average. It's value may be dropping"
+    rec="Buy"
+    rec_reason="This stock is trading close to its 6-month low. You might want to Buy Low and Sell High"
 
 #posts data in  csv file
-csv_file_path=os.path.join(os.path.dirname(__file__), "..", "data", "prices.csv")
+csv_file_path=os.path.join(os.path.dirname(__file__), "..", "data", f"{ticker}_prices.csv")
 
 csv_headers=["timestamp", "open", "high", "low", "close", "volume"]
 with open(csv_file_path, "w") as csv_file:
@@ -136,6 +151,6 @@ print("-------------------------")
 #Plots daily closing price against time
 plotly.offline.plot({
     "data": [go.Scatter(x=dates, y=close_prices)],
-    "layout": go.Layout(title=f"{ticker} close prices")
+    "layout": go.Layout(title=f"{ticker} Closing Prices Over Time", xaxis_title="Time", yaxis_title="Daily Closing Prices ($)")
 }, auto_open=True)
 
